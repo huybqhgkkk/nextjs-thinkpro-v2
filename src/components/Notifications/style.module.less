@@ -1,0 +1,39 @@
+.menuDropdown {
+	z-index: 1050;
+	box-sizing: border-box;
+	width: 400px;
+	padding: 4px 0;
+	text-align: left;
+	list-style-type: none;
+	background: #fff;
+	background-color: #fff;
+	background-clip: padding-box;
+	border-radius: 5px;
+	outline: none;
+	box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+		0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+
+	.list {
+		height: 350px;
+		padding-top: 5px;
+		overflow: auto;
+	}
+
+	.item {
+		display: flex;
+		align-items: center;
+		padding: 10px 20px;
+
+		svg {
+			margin-right: 10px;
+			font-size: 18px;
+		}
+	}
+}
+.list_notify_item:hover {
+	background-color: rgba(245, 245, 245, 1);
+}
+.list_notify_item_seened {
+	background-color: rgba(245, 245, 245, 1);
+	opacity: 0.4;
+}

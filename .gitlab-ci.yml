@@ -1,0 +1,162 @@
+---
+# Gitlab CI configuration file
+
+image: registry.gitlab.com/thinkprovn/gitlab-runner:node-v14.18.0
+
+stages:
+  - build
+  - deploy
+
+################################### DEVELOP ENV ###################################
+predeploy_qc:
+  environment: qc
+  stage: build
+  cache:
+    key: '$CI_COMMIT_REF_NAME'
+    untracked: true
+    paths:
+      - node_modules
+      - .next/cache/
+  only:
+    - qc
+  tags:
+    - docker
+    - development
+  script:
+    - rm -rf .env && ln -s $ENV_QC .env
+    - npm install
+    - npm run build
+    - export DEPLOY_HOST_QC=($DEPLOY_HOST_QC)
+    # Check if environment variable has been set
+    - export DEPLOY_HOST_QC=${DEPLOY_HOST_QC[0]}
+    - if [[ -z "$DEPLOY_HOST_QC" || -z "$PROJECT_LOCATION_QC" || -z "$DEPLOY_PORT_QC" ]]; then echo "Need to set variables"; exit 1; fi
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_QC}" $PWD/node_modules/ ${DEPLOY_HOST_QC}:${PROJECT_LOCATION_QC}/tmp/node_modules/
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_QC}" $PWD/.next/ ${DEPLOY_HOST_QC}:${PROJECT_LOCATION_QC}/tmp/.next/
+    - bash ci-cd/runner/runner.predeploy.sh "$DEPLOY_HOST_QC" "$DEPLOY_PORT_QC" "$PROJECT_LOCATION_QC"
+
+deploy_qc:
+  environment: qc
+  stage: deploy
+  only:
+    - qc
+  tags:
+    - docker
+    - development
+  script:
+    - export DEPLOY_HOST_QC=($DEPLOY_HOST_QC)
+    # Check if environment variable has been set
+    - DEPLOY_HOST_QC=${DEPLOY_HOST_QC[0]}
+    - if [[ -z "$DEPLOY_HOST_QC" || -z "$PROJECT_LOCATION_QC" || -z "$DEPLOY_PORT_QC" ]]; then echo "Need to set variables"; exit 1; fi
+    - bash ci-cd/runner/runner.deploy.sh "$DEPLOY_HOST_QC" "$DEPLOY_PORT_QC" "$PROJECT_LOCATION_QC"
+  when: on_success
+
+################################### STAGING ENV ###################################
+predeploy_stg:
+  environment: staging
+  stage: build
+  cache:
+    key: '$CI_COMMIT_REF_NAME'
+    untracked: true
+    paths:
+      - node_modules
+      - .next/cache/
+  only:
+    - staging
+  tags:
+    - docker
+    - development
+  script:
+    - rm -rf .env && ln -s $ENV_STG .env
+    - npm install
+    - npm run build
+    - export DEPLOY_HOST_STG=($DEPLOY_HOST_STG)
+    # Check if environment variable has been set
+    - export DEPLOY_HOST_STG=${DEPLOY_HOST_STG[0]}
+    - if [[ -z "$DEPLOY_HOST_STG" || -z "$PROJECT_LOCATION_STG" || -z "$DEPLOY_PORT_STG" ]]; then echo "Need to set variables"; exit 1; fi
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_STG}" $PWD/node_modules/ ${DEPLOY_HOST_STG}:${PROJECT_LOCATION_STG}/tmp/node_modules/
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_STG}" $PWD/.next/ ${DEPLOY_HOST_STG}:${PROJECT_LOCATION_STG}/tmp/.next/
+    - bash ci-cd/runner/runner.predeploy.sh "$DEPLOY_HOST_STG" "$DEPLOY_PORT_STG" "$PROJECT_LOCATION_STG"
+
+deploy_stg:
+  environment: staging
+  stage: deploy
+  only:
+    - staging
+  tags:
+    - docker
+    - development
+  script:
+    - export DEPLOY_HOST_STG=($DEPLOY_HOST_STG)
+    # Check if environment variable has been set
+    - DEPLOY_HOST_STG=${DEPLOY_HOST_STG[0]}
+    - if [[ -z "$DEPLOY_HOST_STG" || -z "$PROJECT_LOCATION_STG" || -z "$DEPLOY_PORT_STG" ]]; then echo "Need to set variables"; exit 1; fi
+    - bash ci-cd/runner/runner.deploy.sh "$DEPLOY_HOST_STG" "$DEPLOY_PORT_STG" "$PROJECT_LOCATION_STG"
+  when: on_success
+
+################################### PRODUCTION ENV ###################################
+predeploy_prod:
+  environment: production
+  stage: build
+  cache:
+    key: '$CI_COMMIT_REF_NAME'
+    untracked: true
+    paths:
+      - node_modules
+      - .next/cache/
+  only:
+    - master
+  tags:
+    - docker
+    - thinkpro-frontend
+    - production
+  script:
+    - rm -rf .env && ln -s $ENV_PROD .env
+    - npm install
+    - npm run build
+    - export DEPLOY_HOST_PROD=($DEPLOY_HOST_PROD)
+    # Check if environment variable has been set
+    - export DEPLOY_HOST_PROD=${DEPLOY_HOST_PROD[0]}
+    - if [[ -z "$DEPLOY_HOST_PROD" || -z "$PROJECT_LOCATION_PROD" || -z "$DEPLOY_PORT_PROD" ]]; then echo "Need to set variables"; exit 1; fi
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_PROD}" $PWD/node_modules/ ${DEPLOY_HOST_PROD}:${PROJECT_LOCATION_PROD}/tmp/node_modules/
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_PROD}" $PWD/.next/ ${DEPLOY_HOST_PROD}:${PROJECT_LOCATION_PROD}/tmp/.next/
+    - bash ci-cd/runner/runner.predeploy.sh "$DEPLOY_HOST_PROD" "$DEPLOY_PORT_PROD" "$PROJECT_LOCATION_PROD"
+  
+    - export DEPLOY_HOST_PROD=${DEPLOY_HOST_PROD[1]}
+    - if [[ -z "$DEPLOY_HOST_PROD" || -z "$PROJECT_LOCATION_PROD" || -z "$DEPLOY_PORT_PROD" ]]; then echo "Need to set variables"; exit 1; fi
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_PROD}" $PWD/node_modules/ ${DEPLOY_HOST_PROD}:${PROJECT_LOCATION_PROD}/tmp/node_modules/
+    - rsync --delete -Pavq -e "ssh -p${DEPLOY_PORT_PROD}" $PWD/.next/ ${DEPLOY_HOST_PROD}:${PROJECT_LOCATION_PROD}/tmp/.next/
+    - bash ci-cd/runner/runner.predeploy.sh "$DEPLOY_HOST_PROD" "$DEPLOY_PORT_PROD" "$PROJECT_LOCATION_PROD"
+
+deploy_prod_0:
+  environment: production
+  stage: deploy
+  only:
+    - master
+  tags:
+    - docker
+    - thinkpro-frontend
+    - production
+  script:
+    - export DEPLOY_HOST_PROD=($DEPLOY_HOST_PROD)
+    # Check if environment variable has been set
+    - DEPLOY_HOST_PROD=${DEPLOY_HOST_PROD[0]}
+    - if [[ -z "$DEPLOY_HOST_PROD" || -z "$PROJECT_LOCATION_PROD" || -z "$DEPLOY_PORT_PROD" ]]; then echo "Need to set variables"; exit 1; fi
+    - bash ci-cd/runner/runner.deploy.sh "$DEPLOY_HOST_PROD" "$DEPLOY_PORT_PROD" "$PROJECT_LOCATION_PROD"
+  when: manual
+
+deploy_prod_1:
+  environment: production
+  stage: deploy
+  only:
+    - master
+  tags:
+    - docker
+    - thinkpro-frontend
+    - production
+  script:
+    - export DEPLOY_HOST_PROD=($DEPLOY_HOST_PROD)
+    # Check if environment variable has been set
+    - DEPLOY_HOST_PROD=${DEPLOY_HOST_PROD[1]}
+    - if [[ -z "$DEPLOY_HOST_PROD" || -z "$PROJECT_LOCATION_PROD" || -z "$DEPLOY_PORT_PROD" ]]; then echo "Need to set variables"; exit 1; fi
+    - bash ci-cd/runner/runner.deploy.sh "$DEPLOY_HOST_PROD" "$DEPLOY_PORT_PROD" "$PROJECT_LOCATION_PROD"
+  when: manual
