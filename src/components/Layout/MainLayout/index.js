@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
 
 import Link from 'next/link';
-import Router, { useRouter } from 'next/router';
-import { Layout, BackTop, Menu, Row, Col, Image } from 'antd';
+import Router, {useRouter} from 'next/router';
+import {Layout, BackTop, Menu, Row, Col, Image} from 'antd';
 
 import Header from 'src/components/Layout/Header';
 import AvatarDropDown from 'src/components/AvatarDropDown';
 import Notifications from 'src/components/Notifications';
 import CookieAlert from 'src/components/CookieAlert';
 
-const { Content, Footer } = Layout;
+const {Content, Footer} = Layout;
 
 const propTypes = {
 	children: PropTypes.any,
@@ -19,7 +19,7 @@ const propTypes = {
 const defaultProps = {
 	children: null,
 };
-const { SubMenu } = Menu;
+const {SubMenu} = Menu;
 const routers = {
 	'yeucauthuchi': 1,
 	'/': 1,
@@ -31,7 +31,7 @@ const routers = {
 	'phieuketoan': 4,
 };
 const MainLayout = (props) => {
-	const { children } = props;
+	const {children} = props;
 	const router = useRouter();
 	const cp = router.pathname == '/_error' ? 1 : routers[router.pathname.split('/')[1]] || 2;
 	const [current, setCurrent] = useState(cp);
@@ -47,11 +47,13 @@ const MainLayout = (props) => {
 			Router.events.off('routeChangeStart', handleRouteChange);
 		};
 	}, []);
+
 	useEffect(() => {
 		if (router.pathname == '/_error') {
 			router.push('/yeucauthuchi');
 		}
 	}, []);
+
 	const handleClick = (e) => {
 		setCurrent(e.key);
 	};
@@ -60,20 +62,22 @@ const MainLayout = (props) => {
 			<Layout>
 
 				<Header>
-					<Row justify="space-between" align="middle" style={{ height: '100%' }}>
+					<Row justify="space-between" align="middle" style={{height: '100%'}}>
 						<Col
 							span={2}
-							style={{ padding: '10px 0 10px 16px', height: '100%' }}
+							style={{padding: '10px 0 10px 16px', height: '100%'}}
 							onClick={() => {
-								handleClick({ key: 1 });
+								handleClick({key: 1});
 							}}
 						>
-							<Link href="/yeucauthuchi"><Image src="/images/pro2.svg" preview={false} style={{ cursor: 'pointer', maxWidth: 144 }} /></Link>
+							<Link href="/yeucauthuchi"><Image src="/images/pro2.svg" preview={false}
+															  style={{cursor: 'pointer', maxWidth: 144}}/></Link>
 
 						</Col>
 
-						<Col span={19} style={{ height: '100%', paddingTop: '10px' }}>
-							<Menu onClick={handleClick} selectedKeys={`${current}`} mode="horizontal" style={{ height: '100%' }}>
+						<Col span={19} style={{height: '100%', paddingTop: '10px'}}>
+							<Menu onClick={handleClick} selectedKeys={`${current}`} mode="horizontal"
+								  style={{height: '100%'}}>
 								<Menu.Item key="1">
 									<Link href="/yeucauthuchi">Yêu cầu thu chi</Link>
 								</Menu.Item>
@@ -106,14 +110,14 @@ const MainLayout = (props) => {
 							</Menu>
 						</Col>
 
-						<Col span={3} style={{ height: '100%' }}>
-							<Row align="middle" justify="space-between" style={{ height: '100%' }}>
-								<Col span={3} style={{ cursor: 'pointer' }}>
-									<Notifications />
+						<Col span={3} style={{height: '100%'}}>
+							<Row align="middle" justify="space-between" style={{height: '100%'}}>
+								<Col span={3} style={{cursor: 'pointer'}}>
+									<Notifications/>
 								</Col>
 
 								<Col span={17}>
-									<AvatarDropDown />
+									<AvatarDropDown/>
 								</Col>
 							</Row>
 						</Col>
@@ -127,10 +131,10 @@ const MainLayout = (props) => {
 					{children}
 				</Content>
 
-				<Footer style={{ display: 'none' }} />
+				<Footer style={{display: 'none'}}/>
 			</Layout>
-			<BackTop />
-			<CookieAlert />
+			<BackTop/>
+			<CookieAlert/>
 		</>
 	);
 };
